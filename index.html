@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Excel to SQL</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 400px;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      text-align: center;
+      color: #333;
+    }
+
+    p {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 20px;
+    }
+
+    input[type="file"],
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      resize: vertical;
+      height: 100px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007BFF;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    pre {
+      background: #333;
+      color: #fff;
+      padding: 10px;
+      border-radius: 4px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      max-height: 300px;
+      overflow: auto;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Excel to SQL</h1>
+  <p>Give a custom SQL query with placeholders for column names. Use
+    {column_name} for column placeholders and {rowIndex} for the row index starting from 0.</p>
+  <p>EX: INSERT INTO mCore_data (index, Id,,Code, Date) VALUES ({rowIndex}, {id}, {code}, {date}); </p>
+  <input type="file" id="upload" />
+  <textarea id="custom-query" placeholder="Enter custom SQL query (use {column_name} for placeholders)"></textarea>
+  <button id="generate">Generate SQL</button>
+  <pre id="output"></pre>
+
+  <script>
+    const {ipcRenderer} = require('electron');
+
+    document.getElementById('generate').addEventListener('click', async () => {
+      const fileInput = document.getElementById('upload');
+      const customQueryInput = document.getElementById('custom-query');
+
+      const customQuery = customQueryInput.value;
+
+      if (fileInput.files.length > 0 && customQuery) {
+        const filePath = fileInput.files[0].path;
+        ipcRenderer.send('process-file', {filePath, customQuery});
+      } else {
+        alert('Please select a file, enter a table name, and provide a custom SQL query.');
+      }
+    });
+
+    ipcRenderer.on('sql-generated', (event, sql) => {
+      document.getElementById('output').textContent = sql;
+    });
+  </script>
+</body>
+
+</html>
